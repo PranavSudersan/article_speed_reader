@@ -1,0 +1,92 @@
+{% extends "reader/base.html" %}
+
+{% load static %}
+{% block content %}
+<!--
+<script type="text/javascript" src="{% static 'reader/js/mathjax-config.js' %}"></script>
+-->
+<script type="text/javascript" src="{% static 'reader/js/tex-svg.js' %}" async=""></script>
+    
+
+    {% for post in posts %}
+        <article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="#">{{ post.author }}</a>
+              <small class="text-muted">{{ post.date_posted }}</small>
+            </div>
+            <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
+            <p class="article-content">{{ post.content }}</p>
+          </div>
+        </article>
+    {% endfor %}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+function typeset(code) {
+  MathJax.startup.promise = MathJax.startup.promise
+    .then(() => MathJax.typesetPromise(code()))
+    .catch((err) => console.log('Typeset failed: ' + err.message));
+  return MathJax.startup.promise;
+}
+    </script>
+    <script>
+        var i = 0
+        function displayChunk() {   
+            var x = setInterval(function (){
+
+                    $.ajax({
+                        type: "POST",
+                        url: 'word_display/',
+                        data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                                ind: i },  
+                        success: function callback(response){
+                                   document.getElementById("chunkviewer").innerHTML = response;
+                                   MathJax.typeset();
+                                   i = i+1;
+                                   if (response == 'END!') {
+                                    clearInterval(x);
+                                    i = 0;
+                                    document.getElementById("chunkviewer").innerHTML = "EXPIRED";
+                                  }
+                                },
+                        error: function (error) {
+                                  console.log(error);
+                                  }
+                        
+                    });
+                        
+                    var text_disp = {{ update_function }}
+
+                    
+                    document.getElementById("chunkviewer").innerHTML = "";
+                
+            }, 500);
+        }
+    </script>
+
+    <script>
+    function getURL() {
+        var url_path
+     url_path = document.getElementById("inputurl").value;
+     //document.getElementById("chunkviewer").innerHTML = url_path;
+        }
+    </script>
+    
+    <input type="text" id="inputurl" oninput="getURL()" placeholder="Paste article URL here..." style="width:100%">
+    </br>
+    <button type="button" onclick="displayChunk()">Start</button>
+    <!--
+    <article class="media content-section" id="chunkviewer">
+    solutions to \(ax^2 + bx + c = 0\)
+    </article>
+    -->
+
+    <div id="chunkviewer" style="text-align:center; font-size:24px; height: 100px; line-height: 100px; width: 100%; background-color: rgba(0,0,255,.1)">
+        solutions to \(ax^2 + bx + c = 0\)
+    </div>
+
+    
+{% endblock content %}
+
