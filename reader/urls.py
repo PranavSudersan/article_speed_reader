@@ -19,5 +19,7 @@ from . import views
 urlpatterns = [
     path('', views.home, name='reader-home'),
     path('about/', views.about, name='reader-about'),
-    path('word_display/', views.return_word_chunk, name='word-display-view'),
+    path('word_display/', views.return_word_chunk, name='word-display-return'),
+    path('url_input/', views.return_url_input, name='url-input-return'),
+    path('wb_input/', views.return_wb_input, name='wb-input-return'),
 ]

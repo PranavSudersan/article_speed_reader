@@ -31,13 +31,6 @@
                 <div class="navbar-nav mr-auto">
                   <a class="nav-item nav-link" href="{% url 'reader-home' %}">Home</a>
                   <a class="nav-item nav-link" href="{% url 'reader-about' %}">About</a>
-                </div>
-                <!-- Navbar Right Side -->
-                <div class="navbar-nav">
-                  <a class="nav-item nav-link" href="#">Login</a>
-                  <a class="nav-item nav-link" href="#">Register</a>
-                </div>
-              </div>
             </div>
           </nav>
         </header>
@@ -45,22 +38,31 @@
 
         <main role="main" class="container">
           <div class="row">
-            <div class="col-md-8">
+            <div class="col-8">
               {% block content %}{% endblock %}
             </div>
-            <div class="col-md-4">
+            
+            <div class="col-4">
               <div class="content-section">
-                <h3>Our Sidebar</h3>
-                <p class='text-muted'>You can put any information here you'd like.
-                  <ul class="list-group">
-                    <li class="list-group-item list-group-item-light">Latest Posts</li>
-                    <li class="list-group-item list-group-item-light">Announcements</li>
-                    <li class="list-group-item list-group-item-light">Calendars</li>
-                    <li class="list-group-item list-group-item-light">etc</li>
-                  </ul>
+                <h3>How to use Speed Reader?</h3>
+                  <ol class="list-group", type="1">
+                    <li class="list-group-item list-group-item-light">
+                    1) Paste article URL in the input <b>URL</b> box.
+                    </li>
+                    <li class="list-group-item list-group-item-light">
+                    2) Adjust the <b>NDW</b> (Number of Displayed Words) and <b>Speed</b> values.
+                    </li>
+                    <li class="list-group-item list-group-item-light">
+                    3) Click on <b>START</b> to start reading!
+                    </li>
+                    <li class="list-group-item list-group-item-light">
+                    4) Press <b>STOP</b> to pause the reader. 
+                    </li> 
+                  </ol>
                 </p>
               </div>
             </div>
+            
           </div>
         </main>
 

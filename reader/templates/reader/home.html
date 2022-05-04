@@ -2,26 +2,13 @@
 
 {% load static %}
 {% block content %}
-<!--
+
 <script type="text/javascript" src="{% static 'reader/js/mathjax-config.js' %}"></script>
--->
+
 <script type="text/javascript" src="{% static 'reader/js/tex-svg.js' %}" async=""></script>
     
 
-    {% for post in posts %}
-        <article class="media content-section">
-          <div class="media-body">
-            <div class="article-metadata">
-              <a class="mr-2" href="#">{{ post.author }}</a>
-              <small class="text-muted">{{ post.date_posted }}</small>
-            </div>
-            <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-            <p class="article-content">{{ post.content }}</p>
-          </div>
-        </article>
-    {% endfor %}
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
     <script>
 function typeset(code) {
@@ -31,62 +18,239 @@ function typeset(code) {
   return MathJax.startup.promise;
 }
     </script>
+    
     <script>
-        var i = 0
-        function displayChunk() {   
-            var x = setInterval(function (){
+        var delay_time
+        var chunk_id = 0
+        var click_status = false
+        var interval_func
+        function displayChunk() {
+            click_status = !click_status;
+            if (click_status == true) {
+                document.getElementById("startButton").innerHTML = "Stop";
+                delay_time = parseInt(document.getElementById("wbInput").value)/parseInt(document.getElementById("wpmSlider").value)*60*1000;
+                interval_func = setInterval(function (){
 
-                    $.ajax({
-                        type: "POST",
-                        url: 'word_display/',
-                        data: { csrfmiddlewaretoken: '{{ csrf_token }}',
-                                ind: i },  
-                        success: function callback(response){
-                                   document.getElementById("chunkviewer").innerHTML = response;
-                                   MathJax.typeset();
-                                   i = i+1;
-                                   if (response == 'END!') {
-                                    clearInterval(x);
-                                    i = 0;
-                                    document.getElementById("chunkviewer").innerHTML = "EXPIRED";
-                                  }
-                                },
-                        error: function (error) {
-                                  console.log(error);
-                                  }
-                        
-                    });
-                        
-                    var text_disp = {{ update_function }}
+                        var chunk_ajax = $.ajax({
+                            type: "POST",
+                            url: 'word_display/',
+                            data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                                    ind: chunk_id },  
+                            success: function callback(response){
+                                       document.getElementById("chunkviewer").innerHTML = response;
+                                       document.getElementById("progress").innerHTML = "Progress: " + (chunk_id*100/chunk_count).toFixed() + "%";
+                                       MathJax.typeset();
+                                       chunk_id++;
+                                       if (response == 'END!') {
+                                           click_status = !click_status;
+                                            document.getElementById("startButton").innerHTML = "Start";
+                                            clearInterval(interval_func);
+                                            chunk_id = 0;
+                                            document.getElementById("chunkviewer").innerHTML = "😀 YOU HAVE FINISHED! 😀";
+                                        
+                                      }
+                                    },
+                            error: function (error) {
+                                      console.log(error);
+                                      }
+                            
+                        });
+                            
+                        var text_disp = {{ update_function }}
 
+                        
+                        document.getElementById("chunkviewer").innerHTML = "";
                     
-                    document.getElementById("chunkviewer").innerHTML = "";
-                
-            }, 500);
-        }
-    </script>
-
-    <script>
-    function getURL() {
-        var url_path
-     url_path = document.getElementById("inputurl").value;
-     //document.getElementById("chunkviewer").innerHTML = url_path;
+                }, delay_time);
+            }
+            else {
+                document.getElementById("startButton").innerHTML = "Start";
+                clearInterval(interval_func);    
+            }
         }
     </script>
     
-    <input type="text" id="inputurl" oninput="getURL()" placeholder="Paste article URL here..." style="width:100%">
-    </br>
-    <button type="button" onclick="displayChunk()">Start</button>
-    <!--
-    <article class="media content-section" id="chunkviewer">
-    solutions to \(ax^2 + bx + c = 0\)
-    </article>
-    -->
 
-    <div id="chunkviewer" style="text-align:center; font-size:24px; height: 100px; line-height: 100px; width: 100%; background-color: rgba(0,0,255,.1)">
-        solutions to \(ax^2 + bx + c = 0\)
+<!--
+<script>
+function sleep(ms) {
+  return new Promise(
+    resolve => setTimeout(resolve, ms)
+  );
+}
+
+function test_func(){
+
+    $.ajax({
+        type: "POST",
+        url: 'word_display/',
+        data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                ind: i },  
+        success: function callback(response){
+                   delay_time = parseInt(document.getElementById("wbInput").value)/parseInt(document.getElementById("wpmSlider").value)*60*1000;
+                   document.getElementById("chunkviewer").innerHTML = response;
+                   //document.getElementById("test").innerHTML = delay_time;
+                   MathJax.typeset();
+                   i = i+1;
+                   if (response == 'END!') {
+                    clearInterval(x);
+                    i = 0;
+                    document.getElementById("chunkviewer").innerHTML = "EXPIRED";
+                  }
+                },
+        error: function (error) {
+                  console.log(error);
+                  }
+        
+    });
+        
+    var text_disp = {{ update_function }}
+
+    
+    document.getElementById("chunkviewer").innerHTML = "";
+
+}
+ function displayChunk() {
+    var delay_time
+    var i = 0
+    while (true) {
+        console.log('inside');
+        test_func();
+  //delay_time = parseInt(document.getElementById("wbInput").value)/parseInt(document.getElementById("wpmSlider").value)*60*1000;
+  await sleep(2000);
+}
+}
+
+</script>
+-->    
+    <script>
+    var chunk_count = 0
+    var url_path
+    function getURL() {
+        url_path = document.getElementById("inputurl").value;
+        word_block = document.getElementById("wbInput").value;
+     //document.getElementById("chunkviewer").innerHTML = url_path;
+        $.ajax({
+                type: "POST",
+                url: 'url_input/',
+                data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                        url_path: url_path,
+                        wordblock: word_block},  
+                success: function callback(response){
+                           document.getElementById("url_status").innerHTML = response.message;
+                           if (response.wordcount != '0') {
+                               chunk_count = parseInt(response.chunkcount);
+                               document.getElementById("url_status").innerHTML += (" → " + response.wordcount + " words")
+                               delay_time = parseInt(document.getElementById("wbInput").value)/parseInt(document.getElementById("wpmSlider").value)*60*1000;
+                               }
+
+                        },
+                error: function (error) {
+                          console.log(error);
+                          }
+                
+            });
+        }
+    </script>
+    <div class="container">
+
+        <div class="col align-self-start">
+        <b>URL:</b>&nbsp
+        <input type="text" id="inputurl" oninput="getURL()" onfocus="this.select()" placeholder="Paste article URL here..." style="width: 100%">
+        </div>
+
+        <div class="row align-items-center">
+        <p><i><u>Status:</u> <span id="url_status">No URL</i></span></p>
+        </div>
     </div>
 
+    <div class="center chunkview" id="chunkviewer">
+    ⚡ Speed Reader! ⚡        
+    </div>
+    </br>
+    <!--<div class="center">-->
+    <div class="container">
+      <div class="row align-items-center">
+            <div class="col align-self-center center">
+                <b>NDW:</b>&nbsp
+                <input type="number" id="wbInput" min="1" max="9" value="3" style="width: 50px";>
+            </div>
+            <div class="col align-self-center center">
+                <button class="button" id="startButton" type="button" onclick="displayChunk()">Start</button>
+            </div>
+            <div class="col align-self-center center">
+                <div id="progress">Progress: 0%</div>
+            </div>
+        </div>
+        </br>
+        <div class="row align-items-center">
+            <div class="slidecontainer">
+              <input type="range" min="100" max="2000" value="200" class="slider" id="wpmSlider">
+              <p style="text-align:center"><b>Speed:</b> <span id="wpmValue"></span> words/min</p>
+            </div>
+        </div>
+    </div>
+
+    <!--</div>-->
     
+    <p id="test"></p>
+    
+    <script>
+    var word_block = document.getElementById("wbInput").value
+    function getWB() {
+        url_path = document.getElementById("inputurl").value;
+        word_block = document.getElementById("wbInput").value;
+        $.ajax({
+                type: "POST",
+                url: 'wb_input/',
+                data: { csrfmiddlewaretoken: '{{ csrf_token }}',
+                        url_path: url_path,
+                        wordblock: word_block },
+                error: function (error) {
+                          console.log(error);
+                          }
+                
+            });
+        }
+    </script>
+    
+<script>
+var wb = document.getElementById("wbInput");
+wb.oninput = function() {
+    var word_block_old = word_block
+    getWB();
+    delay_time = parseInt(this.value)/parseInt(document.getElementById("wpmSlider").value)*60*1000;
+//document.getElementById("test").innerHTML = delay_time;
+  if (chunk_id != 0) {
+      chunk_id = parseInt((word_block_old*(chunk_id-2))/word_block);
+      clearInterval(interval_func);
+      //chunk_ajax.abort();
+      click_status = !click_status;
+      displayChunk();
+      }
+}
+</script>
+
+
+
+
+<script>
+var slider = document.getElementById("wpmSlider");
+var output = document.getElementById("wpmValue");
+output.innerHTML = slider.value;
+
+slider.oninput = function() {
+  output.innerHTML = this.value;
+  delay_time = parseInt(document.getElementById("wbInput").value)/parseInt(this.value)*60*1000;
+//document.getElementById("test").innerHTML = delay_time;
+  if (chunk_id != 0) {
+      clearInterval(interval_func);
+      //chunk_ajax.abort();
+      click_status = !click_status;
+      displayChunk();
+      }
+}
+</script>
+
 {% endblock content %}
 

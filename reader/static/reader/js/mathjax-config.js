@@ -1,5 +1,8 @@
 window.MathJax = {
-          startup: {
-            elements: 'demo' 
-          }
-        };
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  },
+  svg: {
+    fontCache: 'global'
+  }
+};
